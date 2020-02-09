@@ -1,0 +1,15 @@
+# set up logging if desired
+if ( $WRITELOG )
+{
+  LOGFILENAME="$HOME/logs/mailfilter.log"
+
+  # change logfile name if we've been called from .qmail-EXT
+  import EXT
+  if ( $EXT )
+  {
+    EXTL=tolower($EXT)
+    LOGFILENAME="$HOME/logs/mailfilter-$EXTL.log"
+  }
+
+  logfile "$LOGFILENAME"
+}

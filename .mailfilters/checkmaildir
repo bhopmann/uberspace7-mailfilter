@@ -1,0 +1,15 @@
+# set default Maildir
+MAILDIR="$HOME/Maildir"
+
+# check if we're called from a .qmail-EXT instead of .qmail
+import EXT
+if ( $EXT )
+{
+  # does a vmailmgr user named $EXT exist?
+  # if yes, deliver mail to his Maildir instead
+  CHECKMAILDIR = `dumpvuser $EXT | grep '^Directory' | awk '{ print $2 }'`
+  if ( $CHECKMAILDIR )
+  {
+    MAILDIR="$HOME/$CHECKMAILDIR"
+  }
+}

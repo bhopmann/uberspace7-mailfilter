@@ -1,0 +1,119 @@
+# Handle Spam. Take care of re-trained messages from spam-learn.
+
+# Check folder structure and test for junk directory.
+# Thunderbird + all open source/ de-facto standard style is "Junk"
+JUNKDIR=".Junk"
+
+# Outlook style
+`test -d "$MAILDIR/.Junk-E-Mail"`
+if( $RETURNCODE == 0 )
+{
+  JUNKDIR=".Junk-E-Mail"
+}
+else
+{
+  # Gmail style
+  `test -d "$MAILDIR/.Spam"`
+  if( $RETURNCODE == 0 )
+  {
+    JUNKDIR=".Spam"
+  }
+  else
+  {
+    # Thunderbird and de-facto standard
+    `test -d "$MAILDIR/.Junk"`
+    if( $RETURNCODE == 0 )
+    {
+      JUNKDIR=".Junk"
+    }
+  }
+}
+
+# test if any Junkdir exists already
+`test -d "$MAILDIR/$JUNKDIR"`
+if( $RETURNCODE == 1 )
+{
+  `maildirmake "$MAILDIR/$JUNKDIR"`
+}
+
+import REDELIVER_SPAM
+if ( $REDELIVER_SPAM )
+{
+  log "Reclassified - Spam detected:"
+
+  # Adding 'X-Spam-Folder: YES' Header
+  xfilter "reformail -a'X-Spam-Folder: YES'"
+
+  DESTDIR="$MAILDIR/$JUNKDIR"
+  SILENT_DESTDIR=$SILENT_REDELIVERED_SPAM
+  include "$HOME/.mailfilters/deliver"
+}
+
+import REDELIVER_HAM
+if ( $REDELIVER_HAM )
+{
+  log "Reclassified - Ham detected:"
+
+  # Removing 'X-Spam-Folder: YES' Header
+  if (/^X-Spam-Folder:/:h)
+  {
+    xfilter "reformail -I'X-Spam-Folder:'"
+  }
+
+  DESTDIR="$MAILDIR"
+  SILENT_DESTDIR=$SILENT_REDELIVERED_HAM
+  include "$HOME/.mailfilters/deliver"
+}
+
+if ( ! $REDELIVER_HAM )
+{
+
+  # Check for whitelisted E-Mails
+  if ( $WHITELIST )
+  {
+    # Source: http://blog.jonaspasche.com/2010/03/23/dspam-automatisch-trainieren/
+    `test -f "$HOME/.mailfilters/whitelist"`
+    if( $RETURNCODE == 0 && /^From:.*/ && lookup($MATCH, "$HOME/.mailfilters/whitelist") )
+    {
+      log "E-Mail detected from Whitelist:"
+
+      # Adding 'X-Spam-Whitelisted: YES' Header
+      xfilter "reformail -a'X-Spam-Whitelisted: YES'"
+    }
+  }
+
+  if ( $BOGOFILTER )
+  {
+  # Show mail to Bogofilter, but only if not whitelisted
+    if (! /^X-Spam-Whitelisted: YES/)
+    {
+      xfilter "$HOME/bin/bogofilter -u -e -p"
+    }
+  }
+
+  # Process SPAM
+  if ( (/^X-Rspamd-Score: *([+-]?[0-9.]+)/:h && $MATCH1 >= $RSPAMDFILTER_MINSPAMSCORE || /^X-Bogosity: (Spam|Yes), tests=bogofilter/) && ! (/^X-Spam-Whitelisted: YES/) ) #&& ! (/^X-Bogosity: (Ham|No), tests=bogofilter/)
+  {
+    if ( /^X-Rspamd-Score: *([+-]?[0-9.]+)/:h && $MATCH1 >= $RSPAMDFILTER_MINSPAMSCORE && ! /^X-Bogosity: (Spam|Yes), tests=bogofilter/ )
+    {
+      SPAM_SERVICE="Rspamd"
+    }
+    elsif ( ! /^X-Rspamd-Score: *([+-]?[0-9.]+)/:h && $MATCH1 >= $RSPAMDFILTER_MINSPAMSCORE && /^X-Bogosity: (Spam|Yes), tests=bogofilter/ )
+    {
+      SPAM_SERVICE="Bogofilter"
+    }
+    else
+    {
+      SPAM_SERVICE="Rspamd/Bogofilter"
+    }
+
+    log "$SPAM_SERVICE - Spam detected:"
+
+    # Adding 'X-Spam-Folder: YES' Header
+    xfilter "reformail -a'X-Spam-Folder: YES'"
+
+    DESTDIR="$MAILDIR/$JUNKDIR"
+    SILENT_DESTDIR=$SILENT_NEW_SPAM
+    include "$HOME/.mailfilters/deliver"
+  }
+}

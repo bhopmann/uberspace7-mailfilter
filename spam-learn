@@ -1,0 +1,196 @@
+#!/bin/bash
+set -euo pipefail
+# normally this is a good idea, but in this case it messes with $BE_NICE
+#IFS=$'\n\t'
+########################################################################
+# 2013-07-16/2015-02-23 Christopher Hirschmann c.hirschmann@jonaspasche.com
+# 2014-05-10 Modifications for re-delivery by Thorsten Koester
+# 2016-02-01 Christian González christian.gonzalez@nerdocs.at
+# 2017-06-12 Modifications for usage with less special folders (by Benedikt Hopmann)
+# 2018-03-23 Modifications for usage with Rspamd (Uberspace 7), dropped CentOS 5 support and DSPAM (by Benedikt Hopmann)
+# 2018-06-12 Added Support for Bogofilter (by Benedikt Hopmann)
+########################################################################
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+########################################################################
+#
+# This script will look for a system user's primary maildir
+# $HOME/Maildir and possible vMailMgr maildirs under $HOME/users/
+# and search them for folders indicating a certain Spam/Ham setup:
+#
+# \
+#  \___ Inbox (Learn as Ham)
+#   \
+#    \___ Junk || Spam || Junk-E-Mail (Learn as Spam)
+#
+# If it finds this folder structure in any maildir, it will
+# show new files - but only of the last 24 hours - moved
+# between the folders 'Junk | Spam | Junk-E-Mail' and 'Inbox'
+# to Spamfilter (so it can learn) and after that it will
+# re-deliver them via maildrop. Therefore files are marked resp.
+# unmarked with the header 'X-Spam-Folder: YES'. The goal is a more
+# intuitive workflow with less special folders like this:
+#
+# Moving from 'Junk | Spam | Junk-E-Mail' -> 'Inbox' = Learn as Ham
+# Moving from 'Inbox' -> 'Junk | Spam | Junk-E-Mail' = Learn as Spam
+#
+# You can make this script more verbose with '-v'.
+#
+# You can also test this script with '-n' in dry run mode. If combined
+# with '-v' it will output what it would have done, but won't do any-
+# thing.
+#
+########################################################################
+# Set Spamfilter
+BOGOFILTER=1;
+RSPAMD=0; # learning with rspamd isn't implemented yet on uberspace 7 on userlevel
+########################################################################
+
+DRYRUN=0;
+VERBOSE=0;
+BE_NICE="nice -n 19 ionice -c3";
+
+while getopts ":hvn" Option
+do
+    case $Option in
+        h       )       echo -e "Usage:\n-n\tdry run\n-v\tbe verbose\n-h\tthis help message"; exit 0;;
+        n       )       DRYRUN=1; ;;
+        v       )       VERBOSE=1; ;;
+        *       )       echo -e "ERROR: Unimplemented option chosen: -${OPTARG}"; exit 1;;
+    esac
+done
+
+[ "${DRYRUN}" == "1" ] && echo "Running in dry run mode."
+
+if [ "${VERBOSE}" == "1" ];
+then
+    echo -n "Running with "
+    [ "${BOGOFILTER}" == "1" ] && echo -n "Bogofilter "
+    [ "${RSPAMD}" == "1" ] && echo -n "Rspamd "
+    echo -ne "on "
+    if `grep -q "CentOS release 6" /etc/redhat-release`;
+    then
+        echo "Uberspace 6"
+    else
+        echo "Uberspace 7"
+    fi
+fi
+
+# to be able to process directory and file names regardless of any kind
+# of weird characters we need to list these names separated by null
+# characters and process them accordingly.
+
+( find ${HOME} -name Maildir -print0 ; if [ -d ${HOME}/users ]; then find ${HOME}/users/ -mindepth 1 -maxdepth 1 -print0 ; fi )| while read -d $'\0' -r DIR ;
+do
+
+  [ "${VERBOSE}" == "1" ] && echo -ne "\nLooking for mails in ${DIR} (Junk Folder: ";
+
+   # Thunderbird, de-facto standard
+   # used, if nothing else found.
+   JUNKDIR=".Junk"
+
+   if [ -d "${DIR}/.Junk-E-Mail" ];
+   then
+       # Outlook
+       JUNKDIR=".Junk-E-Mail"
+   elif [ -d "${DIR}/.Spam" ];
+   then
+       # GMail
+       JUNKDIR=".Spam"
+   fi
+
+    # Looking for recently added mails (of the last 24 hours) in Spam-Folder, previously moved from other Folders
+    if [ -d "${DIR}/${JUNKDIR}" ];
+    then
+        [ "${VERBOSE}" == "1" ] && echo -e "${JUNKDIR}).\nChecking Junk Folder for recently added Spam..."
+        for SUBDIR in new cur ;
+        do
+            find "${DIR}/${JUNKDIR}/${SUBDIR}" -mmin -$((60*24)) -type f -print0 | while read -d $'\0' -r spammail ;
+            do
+              if ! grep -q "X-Spam-Folder: YES" $spammail;
+              then
+                [ "${VERBOSE}" == "1" ] && echo -e "\tEating spam \"${spammail}\". Yuk!"
+                if [ "${DRYRUN}" == "0" ];
+                then
+                    [ "${BOGOFILTER}" == "1" ] && ${BE_NICE} $HOME/bin/bogofilter -s -B "${spammail}";
+                    [ "${RSPAMD}" == "1" ] && echo "Rspamd is not implemented yet";
+                fi
+                if [ "${DIR}" == "${HOME}/Maildir" ];
+                then
+                    [ "${VERBOSE}" == "1" ] && echo -e "\tRe-Delivering Spam to default mailbox."
+                    if [ "${DRYRUN}" == "0" ];
+                    then
+                        REDELIVER_SPAM=1 maildrop $HOME/.mailfilter < "${spammail}";
+                    fi
+                else
+                    [ "${VERBOSE}" == "1" ] && echo -e "\tRe-Delivering Spam to user \"${DIR##*/}\"."
+                    if [ "${DRYRUN}" == "0" ];
+                    then
+                        EXT=${DIR##*/} REDELIVER_SPAM=1 maildrop $HOME/.mailfilter-${DIR##*/} < "${spammail}";
+                    fi
+                fi
+                if [ "${DRYRUN}" == "0" ];
+                then
+                    rm -f "${spammail}";
+                fi
+              fi
+            done
+        done
+    else
+        [ "${VERBOSE}" == "1" ] && echo -e "not found)."
+    fi
+
+    # Looking for recently added mails (of the last 24 hours) in Inbox, previously moved from Spam Folder
+    if [ -d "${DIR}" ];
+    then
+        [ "${VERBOSE}" == "1" ] && echo -e "Checking Inbox for recently added Ham..."
+        for SUBDIR in new cur ;
+        do
+            find "${DIR}/${SUBDIR}" -mmin -$((60*24)) -type f -print0 | while read -d $'\0' -r hammail ; # {cur,new}
+            do
+              if grep -q "X-Spam-Folder: YES" $hammail;
+              then
+                [ "${VERBOSE}" == "1" ] && echo -e "\tEating ham \"${hammail}\". Yum!"
+                if [ "${DRYRUN}" == "0" ];
+                then
+                    [ "${BOGOFILTER}" == "1" ] && ${BE_NICE} $HOME/bin/bogofilter -n -B "${hammail}";
+                    [ "${RSPAMD}" == "1" ] && echo "Rspamd is not implemented yet";
+                fi
+                if [ "${DIR}" == "${HOME}/Maildir" ];
+                then
+                    [ "${VERBOSE}" == "1" ] && echo -e "\tRe-Delivering Ham to default mailbox."
+                    if [ "${DRYRUN}" == "0" ];
+                    then
+                        REDELIVER_HAM=1 maildrop $HOME/.mailfilter < "${hammail}";
+                    fi
+                else
+                    [ "${VERBOSE}" == "1" ] && echo -e "\tRe-Delivering Ham to user \"${DIR##*/}\"."
+                    if [ "${DRYRUN}" == "0" ];
+                    then
+                        EXT=${DIR##*/} REDELIVER_HAM=1 maildrop $HOME/.mailfilter-${DIR##*/} < "${hammail}";
+                    fi
+                fi
+                    if [ "${DRYRUN}" == "0" ];
+                    then
+                        rm -f "${hammail}";
+                    fi
+              fi
+            done
+        done
+    fi
+
+done
+
+[ "${VERBOSE}" == "1" ] && echo -e "\nDone looking for mails."
