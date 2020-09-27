@@ -22,7 +22,7 @@ Get [Bogofilter](https://www.bogofilter.org/) and install it like this:
 ```bash
   ./configure --with-database=sqlite3 --prefix=$HOME
   make
-  install
+  make install
 ```
 
 # Installation of Mailfilter
@@ -31,7 +31,7 @@ Get [Bogofilter](https://www.bogofilter.org/) and install it like this:
 * Rename `.mailfilter` to `.mailfilter-EXT` (replace `EXT` by your namespace) before.
 * Put the file `.mailfilter` (or `.mailfilter-EXT`) and the folder `.mailfilters` in the home directory of your uberspace.
 * Remember to set the correct file permissions: `chmod 600 ~/.mailfilter` (or `.mailfilter-EXT`)
-* Create directory `~/var/log` - it will be used as path for mailfilter logfile
+* mailfilter(-EXT) logfiles can be found in `~/logs` 
 * `spam-learn` goes to `~/bin` (its database will later be found in `~/.bogofilter`)
 
 ### Adding `spam-learn` as a cronjob
