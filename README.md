@@ -20,10 +20,14 @@ The main goal of this filter is a more intuitive workflow with less special fold
 Get [Bogofilter](https://www.bogofilter.org/) and install it like this:
 
 ```bash
+  wget -O bogofilter.tar.xz https://sourceforge.net/projects/bogofilter/files/bogofilter-stable/bogofilter-1.2.5.tar.xz/download
+  tar -xvf bogofilter.tar.xz
+  cd bogofilter-1.2.5
   ./configure --with-database=sqlite3 --prefix=$HOME
   make
   make install
 ```
+(Please adapt to current bogofilter version in the future)
 
 # Installation of Mailfilter
 ### Core Files
