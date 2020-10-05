@@ -6,7 +6,7 @@
 
 This script can be used for setting up a customized mailfilter config with **Rspamd** and **Bogofilter** on an [Uberspace 7](https://uberspace.de) server. Every message will be filtered by these two services: Learning false positives or false negatives is realized with Bogofilter, while Rspamd uses multiple filtering and statistical methods to generate a spam score (which is later used for filtering). [Custom rules](https://wiki.uberspace.de/mail:maildrop#sonstige_filtereien) can be added too. If messages are not correctly recognized as ham, they can be manually taught as ham by setting up a whitelist (one email address each line).
 
-> At this time Rspamd isn't configurable for learning on userlevel (see [manual](https://manual.uberspace.de/mail-filter.html) for the actual default behavior). According to Uberspace this might change in the future...
+> At this time Rspamd isn't configurable for learning on userlevel (see [manual](https://manual.uberspace.de/mail-spam.html) for the actual default behavior). According to Uberspace this might change in the future...
 
 The main goal of this filter is a more intuitive workflow with less special folders (like `Learn as Spam` and `Learn as Ham`) when showing messages to Bogofilter via a customized `spam-learn` script so it can learn. This is realized by marking messages, recognized or reclassified as spam, with the header `X-Spam-Folder: YES`, which is removed for messages that are reclassified as ham. All reclassified messages will be re-delivered via `maildrop`. Finally, teaching spam or ham works like this:
 
@@ -57,7 +57,7 @@ and add this lines
 
 # Credits and used code (snippets)
 * [Custom Filter](https://github.com/stratmaster/uberspace-tools) for Uberspace 6 with DSPAM and SpamAssassin
-* Uberspace 7 [manual](https://manual.uberspace.de/mail-filter.html) for filtering mails
+* Uberspace 7 [manual](https://manual.uberspace.de/mail-spam.html) for filtering mails
 
 # Feedback
 This is work in progress, so do not hesitate to give feedback and/or provide pull requests.
