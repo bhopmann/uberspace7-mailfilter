@@ -31,7 +31,7 @@ Get [Bogofilter](https://www.bogofilter.org/) and install it like this:
 
 # Installation of Mailfilter
 ### Core Files
-* Set up `.qmail` and `maildrop` before (see Uberspace 6 Wiki for setting up [.qmail](https://wiki.uberspace.de/mail:dotqmail) and [Maildrop](https://wiki.uberspace.de/mail:maildrop))
+* Set up `.qmail` and `maildrop` before (see [.qmail](http://www.lifewithqmail.org/lwq.html) and [maildrop](http://www.courier-mta.org/maildrop/) documentation for setting up)
 * Rename `.mailfilter` to `.mailfilter-EXT` (replace `EXT` by your namespace) before.
 * Put the file `.mailfilter` (or `.mailfilter-EXT`) and the folder `.mailfilters` in the home directory of your uberspace.
 * Remember to set the correct file permissions: `chmod 600 ~/.mailfilter` (or `.mailfilter-EXT`)
