@@ -37,6 +37,7 @@ Get [Bogofilter](https://www.bogofilter.org/) and install it like this:
 * Remember to set the correct file permissions: `chmod 600 ~/.mailfilter` (or `.mailfilter-EXT`)
 * mailfilter(-EXT) logfiles can be found in `~/logs` 
 * `spam-learn` goes to `~/bin` (its database will later be found in `~/.bogofilter`)
+* Remember to set the correct file permissions: `chmod 755 ~/bin/spam-learn`
 
 ### Adding `spam-learn` as a cronjob
 
