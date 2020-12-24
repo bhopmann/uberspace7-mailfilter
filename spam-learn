@@ -138,7 +138,10 @@ do
                     [ "${VERBOSE}" == "1" ] && echo -e "\tRe-Delivering Spam to user \"${DIR##*/}\"."
                     if [ "${DRYRUN}" == "0" ];
                     then
-                        EXT=${DIR##*/} REDELIVER_SPAM=1 maildrop $HOME/.mailfilter-${DIR##*/} < "${spammail}";
+                        # Transform string because qmail replaces dots (.) in extension addresses with colons (:)
+                        DIRCOLON=${DIR##*/};
+                        DIRDOT=${DIRCOLON/:/.};
+                        EXT=$DIRDOT REDELIVER_SPAM=1 maildrop $HOME/.mailfilter-${DIR##*/} < "${spammail}";
                     fi
                 fi
                 if [ "${DRYRUN}" == "0" ];
@@ -179,7 +182,10 @@ do
                     [ "${VERBOSE}" == "1" ] && echo -e "\tRe-Delivering Ham to user \"${DIR##*/}\"."
                     if [ "${DRYRUN}" == "0" ];
                     then
-                        EXT=${DIR##*/} REDELIVER_HAM=1 maildrop $HOME/.mailfilter-${DIR##*/} < "${hammail}";
+                        # Transform string because qmail replaces dots (.) in extension addresses with colons (:)
+                        DIRCOLON=${DIR##*/};
+                        DIRDOT=${DIRCOLON/:/.};
+                        EXT=$DIRDOT REDELIVER_HAM=1 maildrop $HOME/.mailfilter-${DIR##*/} < "${hammail}";
                     fi
                 fi
                     if [ "${DRYRUN}" == "0" ];
