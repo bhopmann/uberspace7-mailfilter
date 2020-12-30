@@ -55,6 +55,32 @@ and add this lines
   @hourly ~/bin/spam-learn
 ```
 
+### Enable Uberspace’s own spamfilter (optional)
+
+Check if your U7 spamfilter is enabled. You can do this with this command: 
+
+```
+uberspace mail spamfolder status
+```
+
+If your U7 has an enabled spamfilter, your `.qmail-*` content looks like this:
+
+```
+|maildrop /home/your-uberspace-name/.spamfolder
+```
+
+If you want to switch to this repos scripts (Rspamd & Bogofilter) your `.qmail-*` content needs to look like this:
+
+```
+|maildrop /home/your-uberspace-name/.mailfilter
+```
+
+If you want to use Uberspace‘s own spamfilter **additionally** to the scripts of this repo, then go to [.mailfilter](.mailfilter#L17) and add the following line 
+
+```
+include "$HOME/.spamfolder"
+```
+
 # Credits and used code (snippets)
 * [Custom Filter](https://github.com/stratmaster/uberspace-tools) for Uberspace 6 with DSPAM and SpamAssassin
 * Uberspace 7 [manual](https://manual.uberspace.de/mail-spam.html) for filtering mails

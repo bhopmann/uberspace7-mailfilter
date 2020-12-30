@@ -10,6 +10,14 @@ SILENT_REDELIVERED_HAM="1"
 
 # ------------------------------------------------------
 
+# U7 spamfilter
+
+# If you want to use the U7 spamfilter additionally to 
+# your .mailfilters/* scripts, then add the following line.
+#include "$HOME/.spamfolder"
+
+# ------------------------------------------------------
+
 # Write log file, if desired. Set Maildir. Handle Spam.
 include "$HOME/.mailfilters/writelog"
 include "$HOME/.mailfilters/checkmaildir"
