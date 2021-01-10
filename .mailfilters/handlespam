@@ -1,8 +1,8 @@
 # Handle Spam. Take care of re-trained messages from spam-learn.
 
 # Check folder structure and test for junk directory.
-# Thunderbird + all open source/ de-facto standard style is "Junk"
-JUNKDIR=".Junk"
+# Uberspace uses "Spam" as default folder (https://manual.uberspace.de/mail-spam/#configure-spam-folder)
+JUNKDIR=".Spam"
 
 # Outlook style
 `test -d "$MAILDIR/.Junk-E-Mail"`
