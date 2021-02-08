@@ -4,7 +4,7 @@
 
 ---
 
-This script can be used for setting up a customized mailfilter config with **Rspamd** and **Bogofilter** on an [Uberspace 7](https://uberspace.de) server. Every message will be filtered by these two services: Learning false positives or false negatives is realized with Bogofilter, while Rspamd uses multiple filtering and statistical methods to generate a spam score (which is later used for filtering). [Custom rules](https://wiki.uberspace.de/mail:maildrop#sonstige_filtereien) can be added too. If messages are not correctly recognized as ham, they can be manually taught as ham by setting up a whitelist (one email address each line).
+This script can be used for setting up a customized mailfilter config with **Rspamd** and **Bogofilter** on an [Uberspace 7](https://uberspace.de) server. Every message will be filtered by these two services: Learning false positives or false negatives is realized with Bogofilter, while Rspamd uses multiple filtering and statistical methods to generate a spam score (which is later used for filtering). [Custom rules](https://wiki.uberspace.de/mail:maildrop#sonstige_filtereien) can be added too. If messages are not correctly recognized as ham, they can be manually taught as ham by setting up a Keeplist (one email address each line).
 
 > At this time Rspamd isn't configurable for learning on userlevel (see [manual](https://manual.uberspace.de/mail-spam.html) for the actual default behavior). According to Uberspace this might change in the future...
 

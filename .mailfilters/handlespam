@@ -68,31 +68,31 @@ if ( $REDELIVER_HAM )
 if ( ! $REDELIVER_HAM )
 {
 
-  # Check for whitelisted E-Mails
-  if ( $WHITELIST )
+  # Check for keeplisted E-Mails
+  if ( $KEEPLIST )
   {
     # Source: http://blog.jonaspasche.com/2010/03/23/dspam-automatisch-trainieren/
-    `test -f "$HOME/.mailfilters/whitelist"`
-    if( $RETURNCODE == 0 && /^From:.*/ && lookup($MATCH, "$HOME/.mailfilters/whitelist") )
+    `test -f "$HOME/.mailfilters/keeplist"`
+    if( $RETURNCODE == 0 && /^From:.*/ && lookup($MATCH, "$HOME/.mailfilters/keeplist") )
     {
-      log "E-Mail detected from Whitelist:"
+      log "E-Mail detected from Keeplist:"
 
-      # Adding 'X-Spam-Whitelisted: YES' Header
-      xfilter "reformail -a'X-Spam-Whitelisted: YES'"
+      # Adding 'X-Spam-Keeplisted: YES' Header
+      xfilter "reformail -a'X-Spam-Keeplisted: YES'"
     }
   }
 
   if ( $BOGOFILTER )
   {
-  # Show mail to Bogofilter, but only if not whitelisted
-    if (! /^X-Spam-Whitelisted: YES/)
+  # Show mail to Bogofilter, but only if not keeplisted
+    if (! /^X-Spam-Keeplisted: YES/)
     {
       xfilter "$HOME/bin/bogofilter -u -e -p"
     }
   }
 
   # Process SPAM
-  if ( (/^X-Rspamd-Score: *([+-]?[0-9.]+)/:h && $MATCH1 >= $RSPAMDFILTER_MINSPAMSCORE || /^X-Bogosity: (Spam|Yes), tests=bogofilter/) && ! (/^X-Spam-Whitelisted: YES/) ) #&& ! (/^X-Bogosity: (Ham|No), tests=bogofilter/)
+  if ( (/^X-Rspamd-Score: *([+-]?[0-9.]+)/:h && $MATCH1 >= $RSPAMDFILTER_MINSPAMSCORE || /^X-Bogosity: (Spam|Yes), tests=bogofilter/) && ! (/^X-Spam-Keeplisted: YES/) ) #&& ! (/^X-Bogosity: (Ham|No), tests=bogofilter/)
   {
     if ( /^X-Rspamd-Score: *([+-]?[0-9.]+)/:h && $MATCH1 >= $RSPAMDFILTER_MINSPAMSCORE && ! /^X-Bogosity: (Spam|Yes), tests=bogofilter/ )
     {
