@@ -1,6 +1,6 @@
 # Custom Mailfilter for Uberspace 7
 
-> Attention: This mailfilter is intended to work for Uberspace 7 – a setup for Uberspace 6 with DSPAM and SpamAssassin can be found [here](https://github.com/stratmaster/uberspace-tools).
+> Attention: This mailfilter is intended to work for Uberspace 7 – a setup for Uberspace 6 with DSPAM and SpamAssassin can be found [here](https://github.com/bhopmann/uberspace-tools).
 
 ---
 
@@ -57,7 +57,7 @@ and add this lines
 ```
 
 # Credits and used code (snippets)
-* [Custom Filter](https://github.com/stratmaster/uberspace-tools) for Uberspace 6 with DSPAM and SpamAssassin
+* [Custom Filter](https://github.com/bhopmann/uberspace-tools) for Uberspace 6 with DSPAM and SpamAssassin
 * Uberspace 7 [manual](https://manual.uberspace.de/mail-spam.html) for filtering mails
 
 # Feedback
