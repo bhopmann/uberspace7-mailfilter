@@ -109,8 +109,11 @@ if ( ! $REDELIVER_HAM )
 
     log "$SPAM_SERVICE - Spam detected:"
 
-    # Adding 'X-Spam-Folder: YES' Header
-    xfilter "reformail -a'X-Spam-Folder: YES'"
+    if ( /^X-Bogosity: (Spam|Yes), tests=bogofilter/ )
+    {
+      # Adding 'X-Spam-Folder: YES' Header
+      xfilter "reformail -a'X-Spam-Folder: YES'"
+    }
 
     DESTDIR="$MAILDIR/$JUNKDIR"
     SILENT_DESTDIR=$SILENT_NEW_SPAM
