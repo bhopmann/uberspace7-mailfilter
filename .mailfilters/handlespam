@@ -109,7 +109,7 @@ if ( ! $REDELIVER_HAM )
 
     log "$SPAM_SERVICE - Spam detected:"
 
-    if ( /^X-Bogosity: (Spam|Yes), tests=bogofilter/ )
+    if ( /^X-Bogosity: (Spam|Yes), tests=bogofilter/ || $SILENT_NEW_SPAM )
     {
       # Adding 'X-Spam-Folder: YES' Header
       xfilter "reformail -a'X-Spam-Folder: YES'"
