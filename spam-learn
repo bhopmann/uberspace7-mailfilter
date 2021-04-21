@@ -119,7 +119,8 @@ do
         do
             find "${DIR}/${JUNKDIR}/${SUBDIR}" -mmin -$((60*24)) -type f -print0 | while read -d $'\0' -r spammail ;
             do
-              if ! grep -q "X-Spam-Folder: YES" $spammail;
+              MAIL_SEEN=":2,[a-zPRTDFI]*S[a-zPRTDFI]*$"
+              if ! grep -q "X-Spam-Folder: YES" $spammail && [[ $spammail =~ $MAIL_SEEN ]];
               then
                 [ "${VERBOSE}" == "1" ] && echo -e "\tEating spam \"${spammail}\". Yuk!"
                 if [ "${DRYRUN}" == "0" ];
